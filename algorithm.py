@@ -96,7 +96,7 @@ def adjust_distribution(user, problem, solved):
       return (1-scipy.stats.norm.cdf((x-m1)/math.sqrt(v1))) * \
         scipy.stats.norm.pdf((x-m2)/math.sqrt(v2))
 
-  def normal_approx(distr, interval=2):
+  def normal_approx(distr, interval=5):
     '''
     Approximate a given distribution with a normal distribution. Note that
     the input is typically expected to be created with the `distr` function
@@ -155,9 +155,11 @@ def adjust_distribution(user, problem, solved):
   new_user = normal_approx(user_fn)
   new_problem = normal_approx(problem_fn)
 
+  '''
   print 'solved: ', solved
   print 'user: ', user, new_user
   print 'problem: ', problem, new_problem
+  '''
   return (new_user, new_problem)
 
 if __name__ == '__main__':
@@ -167,6 +169,6 @@ if __name__ == '__main__':
   #idx = get_next_problem(users[0], problems, [])
   # ASSUME users[0] - problems[0] and users[0] wins
   user = users[0]
-  for p in problems[:-1]:
+  for p in problems[3:-1]:
     user, p2 = adjust_distribution(user, p, True)
   user, p2 = adjust_distribution(user, problems[-1], False)
