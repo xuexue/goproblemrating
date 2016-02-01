@@ -15,6 +15,10 @@ import functools
 MIN_VAL = -500
 MAX_VAL = 3000
 
+MIN_VARIANCE = 200 # same for user & problem?
+# without the minimum variance, weird things can happen:
+# e.g. something very unexpected could suddenly increase the variance
+# by A LOT
 
 def simulate_problems():
   '''Simulate problems. Assume that problems are given an initial range
@@ -31,7 +35,7 @@ def simulate_problems():
     # Convert to gaussian. STD is chosen so that ~85% of the weight of the
     # distribution lies within [a, b]
     mean = (a + b) / 2
-    std = (b - a) / 3
+    std = (b - a) / 2
     var = std * std
     problems.append((mean, var),)
   return problems
@@ -40,7 +44,7 @@ def simulate_users():
   '''Simulate users. Hardcoded for now.'''
   #new_user_mean = 2000
   new_user_mean = 300
-  new_user_var = 500*500
+  new_user_var = 250*250
   new_users = [(new_user_mean, new_user_var), 
                (new_user_mean, new_user_var), 
                (new_user_mean, new_user_var)]
@@ -130,6 +134,7 @@ def adjust_distribution(user, problem, solved):
       else:
         distr_moment2_right += (x - distr_mode) * (x - distr_mode) * y / integral * interval
     new_variance = 2 * max(distr_moment2_left, distr_moment2_right)
+    new_variance = max(MIN_VARIANCE, new_variance)
     return (new_mean, new_variance)
 
   user_mean, user_var = user
@@ -150,12 +155,12 @@ def adjust_distribution(user, problem, solved):
 
   plt.plot(range(MIN_VAL, MAX_VAL, 10),
            [user_fn(i) for i in xrange(MIN_VAL, MAX_VAL, 10)])
-  #plt.show()
 
   new_user = normal_approx(user_fn)
   new_problem = normal_approx(problem_fn)
 
   '''
+  #plt.show()
   print 'solved: ', solved
   print 'user: ', user, new_user
   print 'problem: ', problem, new_problem
@@ -166,9 +171,18 @@ if __name__ == '__main__':
   problems = simulate_problems()
   users = simulate_users()
 
-  #idx = get_next_problem(users[0], problems, [])
-  # ASSUME users[0] - problems[0] and users[0] wins
+  '''
+  user = (185, 200) 
+  problem = (175, 200)
+  adjust_distribution(user, problem, False)
+
+  '''
   user = users[0]
-  for p in problems[3:-1]:
-    user, p2 = adjust_distribution(user, p, True)
-  user, p2 = adjust_distribution(user, problems[-1], False)
+  problem = problems[0]
+
+  print 'start', user, problem
+  for i in xrange(100):
+    user, problem = adjust_distribution(user, problem, True)
+    print i, 'win', user, problem
+    user, problem = adjust_distribution(user, problem, False)
+    print i, 'lose', user, problem

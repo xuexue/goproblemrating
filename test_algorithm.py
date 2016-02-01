@@ -23,8 +23,30 @@ def test_noninformative_presequence():
   for p in problems[5:-1]:
     u2, p2 = adjust_distribution(u2, p, True)
   u2, p2 = adjust_distribution(u1, problems[-1], False)
-  assert u1[0] > u2[0] # make sense for the first person to score little higher
+  print u1[0]
+  print u2[0]
+  assert u1[0] >= u2[0] # make sense for the first person to score little higher
   assert abs(u1[0] - u2[0]) < 50 # but not too much
+
+def test_convergence():
+  '''
+  Have the same user and problem win and lose over and over again, 
+  and they should "converge" or ocillate around the same value.
+  '''
+  user = users[0]
+  problem = problems[0]
+  for i in xrange(15):
+    user, problem = adjust_distribution(user, problem, True)
+    user, problem = adjust_distribution(user, problem, False)
+  user1, problem1 = adjust_distribution(user, problem, True)
+  user2, problem2 = adjust_distribution(user1, problem1, False)
+  print user, user1, user2
+  print problem, problem1, problem2
+  assert abs(user[0] - user2[0]) < 10
+  assert abs(user1[0] - user2[0]) < 50
+  assert abs(problem[0] - problem2[0]) < 10
+  assert abs(problem1[0] - problem2[0]) < 50
 
 if __name__ == '__main__':
   test_noninformative_presequence()
+  test_convergence()
